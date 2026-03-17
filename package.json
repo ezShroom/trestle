@@ -2,7 +2,7 @@
 	"name": "trestle-cli",
 	"module": "index.ts",
 	"type": "module",
-	"version": "0.0.1",
+	"version": "0.0.3",
 	"devDependencies": {
 		"@eslint/compat": "^2.0.3",
 		"@eslint/js": "^10.0.1",
