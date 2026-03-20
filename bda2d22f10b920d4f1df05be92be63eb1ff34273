@@ -1,0 +1,53 @@
+src/mcp_server.ts
+  ef1f5e0808d28308 1-163
+src/runtime.ts
+  ef1f5e0808d28308 1-37
+src/constants.ts
+  ef1f5e0808d28308 1-25
+src/index.ts
+  ef1f5e0808d28308 4-12,14-153
+src/auth.ts
+  ef1f5e0808d28308 1-59
+src/paths.ts
+  ef1f5e0808d28308 1-46
+src/types.ts
+  ef1f5e0808d28308 1-38
+package.json
+  ef1f5e0808d28308 10,29,31-34
+src/fs_state.ts
+  ef1f5e0808d28308 1-63
+src/update_check.ts
+  ef1f5e0808d28308 1-58
+src/daemon.ts
+  ef1f5e0808d28308 1-178
+src/tcc.ts
+  ef1f5e0808d28308 1-407
+src/prompt.ts
+  ef1f5e0808d28308 1-39
+.github/workflows/ci.yaml
+  ef1f5e0808d28308 55,64-65,68,71
+src/service.ts
+  ef1f5e0808d28308 1-237
+src/setup.ts
+  ef1f5e0808d28308 1-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "bda2d22f10b920d4f1df05be92be63eb1ff34273",
+  "prompts": {
+    "ef1f5e0808d28308": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d0d65-862b-74f3-afc0-fe819e9147d5",
+        "model": "gpt-5.4"
+      },
+      "human_author": "ezShroom <68300730+ezShroom@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 1618,
+      "total_deletions": 106,
+      "accepted_lines": 1560,
+      "overriden_lines": 0
+    }
+  }
+}
