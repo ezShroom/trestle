@@ -11,6 +11,7 @@ import { FileToolManager } from './file_runtime'
 import { loadConfig, loadState } from './fs_state'
 import { normalizeComputerName } from './runtime'
 import { TerminalManager } from './terminal_runtime'
+import { VisionManager } from './vision_runtime'
 
 function jsonContent(value: unknown) {
 	return {
@@ -23,7 +24,7 @@ function jsonContent(value: unknown) {
 	}
 }
 
-function buildMcpServer(terminalManager: TerminalManager, fileToolManager: FileToolManager) {
+function buildMcpServer(terminalManager: TerminalManager, fileToolManager: FileToolManager, visionManager: VisionManager) {
 	const config = loadConfig()
 	const computerSlug = normalizeComputerName(config?.computerName ?? 'computer')
 	const toolName = (suffix: string) => `${computerSlug}_${suffix}`
@@ -57,9 +58,34 @@ function buildMcpServer(terminalManager: TerminalManager, fileToolManager: FileT
 				tunnelUrl: state.tunnelUrl ?? null,
 				connectionId: state.connectionId ?? null,
 				terminal: terminalManager.summary(),
-				fileTools: fileToolManager.summary()
+				fileTools: fileToolManager.summary(),
+				vision: {
+					enabled: true
+				}
 			})
 		}
+	)
+
+	server.registerTool(
+		toolName('read_image'),
+		{
+			description: 'Read a local image file and return it as MCP image content.',
+			inputSchema: {
+				path: z.string()
+			}
+		},
+		async (input) => visionManager.readImage(input)
+	)
+
+	server.registerTool(
+		toolName('screenshot'),
+		{
+			description: 'Capture the current display contents and return one image per captured display when supported by the OS.',
+			inputSchema: {
+				display: z.number().int().positive().optional()
+			}
+		},
+		async (input) => visionManager.screenshot(input)
 	)
 
 	server.registerTool(
@@ -263,11 +289,16 @@ function buildMcpServer(terminalManager: TerminalManager, fileToolManager: FileT
 	return server
 }
 
-async function startMcpServer(port: number, terminalManager: TerminalManager, fileToolManager: FileToolManager) {
+async function startMcpServer(
+	port: number,
+	terminalManager: TerminalManager,
+	fileToolManager: FileToolManager,
+	visionManager: VisionManager
+) {
 	const app = createMcpExpressApp({ host: defaultMcpHost })
 
 	app.post(defaultMcpPath, async (req: Request, res: Response) => {
-		const server = buildMcpServer(terminalManager, fileToolManager)
+		const server = buildMcpServer(terminalManager, fileToolManager, visionManager)
 
 		try {
 			const transport = new StreamableHTTPServerTransport({

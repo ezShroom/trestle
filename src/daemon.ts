@@ -9,6 +9,7 @@ import { formatError, isPokeLoginMessage, normalizeComputerName, sleep } from '.
 import { startMcpServer } from './mcp_server'
 import { TerminalManager } from './terminal_runtime'
 import { maybeNotifyAboutUpdate } from './update_check'
+import { VisionManager } from './vision_runtime'
 
 export async function runDaemon() {
 	ensureAppDirs()
@@ -28,7 +29,8 @@ export async function runDaemon() {
 
 	const terminalManager = new TerminalManager()
 	const fileToolManager = new FileToolManager()
-	const mcpServer = await startMcpServer(config.port || defaultMcpPort, terminalManager, fileToolManager)
+	const visionManager = new VisionManager()
+	const mcpServer = await startMcpServer(config.port || defaultMcpPort, terminalManager, fileToolManager, visionManager)
 	void maybeNotifyAboutUpdate()
 
 	let stopRequested = false

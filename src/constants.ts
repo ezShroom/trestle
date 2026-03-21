@@ -30,6 +30,8 @@ const defaultFileGrepLimit = 200
 const maxFileGrepLimit = 1_000
 const defaultFileSnapshotTtlMs = 60 * 60_000
 const maxFileSnapshots = 1_000
+const maxVisionImageBytes = 10 * 1024 * 1024
+const maxScreenshotDisplays = 8
 
 export {
 	defaultMcpHost,
@@ -42,6 +44,7 @@ export {
 	defaultFileSnapshotTtlMs,
 	defaultTerminalCommandTimeoutMs,
 	defaultTerminalResponseBytes,
+	maxScreenshotDisplays,
 	maxFileGrepLimit,
 	maxFileListLimit,
 	maxFileReadLimit,
@@ -59,5 +62,6 @@ export {
 	packageVersion,
 	serviceLabel,
 	serviceSlug,
+	maxVisionImageBytes,
 	terminalKillGraceMs
 }
