@@ -15,7 +15,7 @@ import {
 	terminalKillGraceMs
 } from './constants'
 import { ensureAppDirs } from './fs_state'
-import { terminalLogDir } from './paths'
+import { terminalHomeDir, terminalLogDir } from './paths'
 
 type SessionStatus = 'idle' | 'running' | 'closing' | 'closed' | 'failed'
 type CommandStatus = 'queued' | 'running' | 'completed' | 'timed_out' | 'interrupted' | 'failed'
@@ -182,7 +182,7 @@ function pickShell(shellOverride?: string) {
 }
 
 function resolveSessionCwd(cwd?: string) {
-	return path.resolve(cwd ?? process.cwd())
+	return path.resolve(cwd ?? terminalHomeDir)
 }
 
 function outputHandle(sessionId: string, commandId: string) {

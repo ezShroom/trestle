@@ -4,7 +4,7 @@ import { checkPokeAuth } from './auth'
 import { defaultMcpPort, packageCommand } from './constants'
 import { ensureAppDirs, loadConfig, updateState } from './fs_state'
 import { localMcpUrl } from './paths'
-import { formatError, isPokeLoginMessage, sleep } from './runtime'
+import { formatError, isPokeLoginMessage, normalizeComputerName, sleep } from './runtime'
 import { startMcpServer } from './mcp_server'
 import { TerminalManager } from './terminal_runtime'
 import { maybeNotifyAboutUpdate } from './update_check'
@@ -75,7 +75,7 @@ export async function runDaemon() {
 
 			const tunnel = new PokeTunnel({
 				url: localMcpUrl(mcpServer.port),
-				name: config.computerName,
+				name: `${normalizeComputerName(config.computerName)}_queen-poke`,
 				syncIntervalMs: 5 * 60 * 1_000
 			})
 

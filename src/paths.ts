@@ -21,6 +21,7 @@ const configFile = path.join(configDir, 'config.json')
 const stateFile = path.join(configDir, 'state.json')
 const logDir = path.join(configDir, 'logs')
 const terminalLogDir = path.join(logDir, 'terminal')
+const terminalHomeDir = path.join(os.homedir(), '.queen-poke')
 const stdoutLogFile = path.join(logDir, 'daemon.stdout.log')
 const stderrLogFile = path.join(logDir, 'daemon.stderr.log')
 const launchAgentFile = path.join(os.homedir(), 'Library', 'LaunchAgents', `${serviceLabel}.plist`)
@@ -42,6 +43,7 @@ export {
 	stateFile,
 	stderrLogFile,
 	stdoutLogFile,
+	terminalHomeDir,
 	terminalLogDir,
 	systemdServiceFile,
 	systemdUserDir

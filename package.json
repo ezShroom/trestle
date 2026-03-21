@@ -1,5 +1,5 @@
 {
-	"name": "trestle-cli",
+	"name": "queen-poke",
 	"module": "index.ts",
 	"type": "module",
 	"version": "0.0.3",
@@ -22,8 +22,7 @@
 		"dev": "bun run ./src/index.ts"
 	},
 	"bin": {
-		"trestle": "./src/index.ts",
-		"trestle-cli": "./src/index.ts"
+		"queen-poke": "./src/index.ts"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.27.1",

@@ -35,3 +35,13 @@ export function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: 
 		})
 	])
 }
+
+export function normalizeComputerName(value: string) {
+	const normalized = value
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+
+	return normalized || 'computer'
+}

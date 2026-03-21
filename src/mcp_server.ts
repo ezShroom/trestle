@@ -8,6 +8,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { z } from 'zod'
 import { defaultMcpHost, defaultMcpPath, packageCommand, packageVersion } from './constants'
 import { loadConfig, loadState } from './fs_state'
+import { normalizeComputerName } from './runtime'
 import { TerminalManager } from './terminal_runtime'
 
 function jsonContent(value: unknown) {
@@ -22,6 +23,9 @@ function jsonContent(value: unknown) {
 }
 
 function buildMcpServer(terminalManager: TerminalManager) {
+	const config = loadConfig()
+	const computerSlug = normalizeComputerName(config?.computerName ?? 'computer')
+	const toolName = (suffix: string) => `${computerSlug}_${suffix}`
 	const server = new McpServer(
 		{
 			name: packageCommand,
@@ -37,16 +41,16 @@ function buildMcpServer(terminalManager: TerminalManager) {
 	)
 
 	server.registerTool(
-		'computer_status',
+		toolName('computer_status'),
 		{
 			description: 'Return the current local daemon, tunnel, and terminal runtime status.',
 			inputSchema: {}
 		},
 		async () => {
-			const config = loadConfig()
 			const state = loadState()
 			return jsonContent({
 				computerName: config?.computerName ?? null,
+				computerSlug,
 				health: state.health,
 				statusMessage: state.statusMessage,
 				tunnelUrl: state.tunnelUrl ?? null,
@@ -57,7 +61,7 @@ function buildMcpServer(terminalManager: TerminalManager) {
 	)
 
 	server.registerTool(
-		'terminal_session_create',
+		toolName('terminal_session_create'),
 		{
 			description: 'Create a persistent terminal session.',
 			inputSchema: {
@@ -71,7 +75,7 @@ function buildMcpServer(terminalManager: TerminalManager) {
 	)
 
 	server.registerTool(
-		'terminal_exec',
+		toolName('terminal_exec'),
 		{
 			description: 'Execute one command or a small sequential batch inside a persistent terminal session.',
 			inputSchema: {
@@ -88,7 +92,7 @@ function buildMcpServer(terminalManager: TerminalManager) {
 	)
 
 	server.registerTool(
-		'terminal_read',
+		toolName('terminal_read'),
 		{
 			description: 'Read terminal output from a prior command using a byte cursor.',
 			inputSchema: {
@@ -102,7 +106,7 @@ function buildMcpServer(terminalManager: TerminalManager) {
 	)
 
 	server.registerTool(
-		'terminal_search_output',
+		toolName('terminal_search_output'),
 		{
 			description: 'Search retained terminal output for literal text or regex matches.',
 			inputSchema: {
@@ -119,7 +123,7 @@ function buildMcpServer(terminalManager: TerminalManager) {
 	)
 
 	server.registerTool(
-		'terminal_status',
+		toolName('terminal_status'),
 		{
 			description: 'Inspect the current state of a terminal session and its active command, if any.',
 			inputSchema: {
@@ -130,7 +134,7 @@ function buildMcpServer(terminalManager: TerminalManager) {
 	)
 
 	server.registerTool(
-		'terminal_interrupt',
+		toolName('terminal_interrupt'),
 		{
 			description: 'Interrupt the active command in a terminal session.',
 			inputSchema: {
@@ -142,7 +146,7 @@ function buildMcpServer(terminalManager: TerminalManager) {
 	)
 
 	server.registerTool(
-		'terminal_session_close',
+		toolName('terminal_session_close'),
 		{
 			description: 'Close a terminal session and terminate any remaining child processes.',
 			inputSchema: {
