@@ -1,6 +1,6 @@
 import 'colors'
-import type { AddressInfo } from 'node:net'
 import type { Server as HttpServer } from 'node:http'
+import type { AddressInfo } from 'node:net'
 import type { Request, Response } from 'express'
 import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
@@ -8,8 +8,20 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { z } from 'zod'
 import { defaultMcpHost, defaultMcpPath, packageCommand, packageVersion } from './constants'
 import { loadConfig, loadState } from './fs_state'
+import { TerminalManager } from './terminal_runtime'
 
-function buildPlaceholderServer() {
+function jsonContent(value: unknown) {
+	return {
+		content: [
+			{
+				type: 'text' as const,
+				text: JSON.stringify(value, null, 2)
+			}
+		]
+	}
+}
+
+function buildMcpServer(terminalManager: TerminalManager) {
 	const server = new McpServer(
 		{
 			name: packageCommand,
@@ -20,68 +32,134 @@ function buildPlaceholderServer() {
 				logging: {}
 			},
 			instructions:
-				'This is the local computer-use MCP endpoint. Tooling is intentionally minimal while the transport and background service are being built out.'
+				'This is the local computer-use MCP endpoint. It exposes persistent terminal sessions with blocking execution by default.'
 		}
 	)
 
 	server.registerTool(
 		'computer_status',
 		{
-			description: 'Return the current local daemon and tunnel status.',
+			description: 'Return the current local daemon, tunnel, and terminal runtime status.',
 			inputSchema: {}
 		},
 		async () => {
 			const config = loadConfig()
 			const state = loadState()
-			return {
-				content: [
-					{
-						type: 'text',
-						text: JSON.stringify(
-							{
-								computerName: config?.computerName ?? null,
-								health: state.health,
-								statusMessage: state.statusMessage,
-								tunnelUrl: state.tunnelUrl ?? null,
-								connectionId: state.connectionId ?? null
-							},
-							null,
-							2
-						)
-					}
-				]
-			}
+			return jsonContent({
+				computerName: config?.computerName ?? null,
+				health: state.health,
+				statusMessage: state.statusMessage,
+				tunnelUrl: state.tunnelUrl ?? null,
+				connectionId: state.connectionId ?? null,
+				terminal: terminalManager.summary()
+			})
 		}
 	)
 
 	server.registerTool(
-		'echo',
+		'terminal_session_create',
 		{
-			description: 'Placeholder tool used to confirm the local MCP server is alive.',
+			description: 'Create a persistent terminal session.',
 			inputSchema: {
-				message: z.string().default('hello')
+				cwd: z.string().optional(),
+				env: z.record(z.string(), z.string()).optional(),
+				shell: z.string().optional(),
+				label: z.string().optional()
 			}
 		},
-		async ({ message }) => {
-			return {
-				content: [
-					{
-						type: 'text',
-						text: `echo: ${message}`
-					}
-				]
+		async (input) => jsonContent(await terminalManager.createSession(input))
+	)
+
+	server.registerTool(
+		'terminal_exec',
+		{
+			description: 'Execute one command or a small sequential batch inside a persistent terminal session.',
+			inputSchema: {
+				sessionId: z.string(),
+				command: z.string().optional(),
+				commands: z.array(z.string()).optional(),
+				wait: z.boolean().default(true),
+				timeoutMs: z.number().int().positive().optional(),
+				maxOutputBytes: z.number().int().positive().optional(),
+				label: z.string().optional()
 			}
-		}
+		},
+		async (input) => jsonContent(await terminalManager.exec(input))
+	)
+
+	server.registerTool(
+		'terminal_read',
+		{
+			description: 'Read terminal output from a prior command using a byte cursor.',
+			inputSchema: {
+				sessionId: z.string(),
+				commandId: z.string().optional(),
+				cursor: z.number().int().nonnegative().optional(),
+				limitBytes: z.number().int().positive().optional()
+			}
+		},
+		async (input) => jsonContent(terminalManager.read(input))
+	)
+
+	server.registerTool(
+		'terminal_search_output',
+		{
+			description: 'Search retained terminal output for literal text or regex matches.',
+			inputSchema: {
+				sessionId: z.string(),
+				commandId: z.string().optional(),
+				query: z.string(),
+				limit: z.number().int().positive().optional(),
+				regex: z.boolean().default(false),
+				before: z.number().int().nonnegative().optional(),
+				after: z.number().int().nonnegative().optional()
+			}
+		},
+		async (input) => jsonContent(terminalManager.search(input))
+	)
+
+	server.registerTool(
+		'terminal_status',
+		{
+			description: 'Inspect the current state of a terminal session and its active command, if any.',
+			inputSchema: {
+				sessionId: z.string()
+			}
+		},
+		async ({ sessionId }) => jsonContent(terminalManager.status(sessionId))
+	)
+
+	server.registerTool(
+		'terminal_interrupt',
+		{
+			description: 'Interrupt the active command in a terminal session.',
+			inputSchema: {
+				sessionId: z.string(),
+				commandId: z.string().optional()
+			}
+		},
+		async (input) => jsonContent(await terminalManager.interrupt(input))
+	)
+
+	server.registerTool(
+		'terminal_session_close',
+		{
+			description: 'Close a terminal session and terminate any remaining child processes.',
+			inputSchema: {
+				sessionId: z.string()
+			}
+		},
+		async ({ sessionId }) => jsonContent(await terminalManager.closeSession(sessionId))
 	)
 
 	return server
 }
 
-async function startMcpServer(port: number) {
+async function startMcpServer(port: number, terminalManager: TerminalManager) {
 	const app = createMcpExpressApp({ host: defaultMcpHost })
 
 	app.post(defaultMcpPath, async (req: Request, res: Response) => {
-		const server = buildPlaceholderServer()
+		const server = buildMcpServer(terminalManager)
 
 		try {
 			const transport = new StreamableHTTPServerTransport({
@@ -147,8 +225,9 @@ async function startMcpServer(port: number) {
 
 	return {
 		port: actualPort,
-		close: () =>
-			new Promise<void>((resolve, reject) => {
+		close: async () => {
+			await terminalManager.shutdown().catch(() => {})
+			return new Promise<void>((resolve, reject) => {
 				httpServer.close((error) => {
 					if (error) {
 						reject(error)
@@ -157,6 +236,7 @@ async function startMcpServer(port: number) {
 					resolve()
 				})
 			})
+		}
 	}
 }
 

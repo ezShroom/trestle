@@ -6,6 +6,7 @@ import { ensureAppDirs, loadConfig, updateState } from './fs_state'
 import { localMcpUrl } from './paths'
 import { formatError, isPokeLoginMessage, sleep } from './runtime'
 import { startMcpServer } from './mcp_server'
+import { TerminalManager } from './terminal_runtime'
 import { maybeNotifyAboutUpdate } from './update_check'
 
 export async function runDaemon() {
@@ -24,7 +25,8 @@ export async function runDaemon() {
 		statusMessage: 'Starting local MCP server...'
 	}))
 
-	const mcpServer = await startMcpServer(config.port || defaultMcpPort)
+	const terminalManager = new TerminalManager()
+	const mcpServer = await startMcpServer(config.port || defaultMcpPort, terminalManager)
 	void maybeNotifyAboutUpdate()
 
 	let stopRequested = false

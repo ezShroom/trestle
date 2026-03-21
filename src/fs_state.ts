@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { configDir, configFile, logDir, stateFile } from './paths'
+import { configDir, configFile, logDir, stateFile, terminalLogDir } from './paths'
 import type { AppConfig, AppState } from './types'
 
 const defaultState: AppState = {
@@ -10,6 +10,7 @@ const defaultState: AppState = {
 function ensureAppDirs() {
 	fs.mkdirSync(configDir, { recursive: true })
 	fs.mkdirSync(logDir, { recursive: true })
+	fs.mkdirSync(terminalLogDir, { recursive: true })
 }
 
 function loadConfig() {

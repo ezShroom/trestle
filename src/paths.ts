@@ -20,6 +20,7 @@ const configDir = resolveConfigBaseDir()
 const configFile = path.join(configDir, 'config.json')
 const stateFile = path.join(configDir, 'state.json')
 const logDir = path.join(configDir, 'logs')
+const terminalLogDir = path.join(logDir, 'terminal')
 const stdoutLogFile = path.join(logDir, 'daemon.stdout.log')
 const stderrLogFile = path.join(logDir, 'daemon.stderr.log')
 const launchAgentFile = path.join(os.homedir(), 'Library', 'LaunchAgents', `${serviceLabel}.plist`)
@@ -41,6 +42,7 @@ export {
 	stateFile,
 	stderrLogFile,
 	stdoutLogFile,
+	terminalLogDir,
 	systemdServiceFile,
 	systemdUserDir
 }
