@@ -2,6 +2,7 @@ import 'colors'
 import { PokeTunnel } from 'poke'
 import { checkPokeAuth } from './auth'
 import { defaultMcpPort, packageCommand } from './constants'
+import { FileToolManager } from './file_runtime'
 import { ensureAppDirs, loadConfig, updateState } from './fs_state'
 import { localMcpUrl } from './paths'
 import { formatError, isPokeLoginMessage, normalizeComputerName, sleep } from './runtime'
@@ -26,7 +27,8 @@ export async function runDaemon() {
 	}))
 
 	const terminalManager = new TerminalManager()
-	const mcpServer = await startMcpServer(config.port || defaultMcpPort, terminalManager)
+	const fileToolManager = new FileToolManager()
+	const mcpServer = await startMcpServer(config.port || defaultMcpPort, terminalManager, fileToolManager)
 	void maybeNotifyAboutUpdate()
 
 	let stopRequested = false

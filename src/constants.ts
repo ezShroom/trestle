@@ -21,13 +21,31 @@ const maxTerminalEnvironmentBytes = 16 * 1024
 const maxTerminalRetentionBytes = 512 * 1024
 const maxTerminalSessionIdleMs = 30 * 60_000
 const terminalKillGraceMs = 2_000
+const defaultFileReadOffset = 1
+const defaultFileReadLimit = 200
+const maxFileReadLimit = 1_000
+const defaultFileListLimit = 200
+const maxFileListLimit = 1_000
+const defaultFileGrepLimit = 200
+const maxFileGrepLimit = 1_000
+const defaultFileSnapshotTtlMs = 60 * 60_000
+const maxFileSnapshots = 1_000
 
 export {
 	defaultMcpHost,
 	defaultMcpPath,
 	defaultMcpPort,
+	defaultFileGrepLimit,
+	defaultFileListLimit,
+	defaultFileReadLimit,
+	defaultFileReadOffset,
+	defaultFileSnapshotTtlMs,
 	defaultTerminalCommandTimeoutMs,
 	defaultTerminalResponseBytes,
+	maxFileGrepLimit,
+	maxFileListLimit,
+	maxFileReadLimit,
+	maxFileSnapshots,
 	maxTerminalBatchCommands,
 	maxTerminalCommandTimeoutMs,
 	maxTerminalEnvironmentBytes,

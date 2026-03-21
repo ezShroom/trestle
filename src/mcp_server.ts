@@ -7,6 +7,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { z } from 'zod'
 import { defaultMcpHost, defaultMcpPath, packageCommand, packageVersion } from './constants'
+import { FileToolManager } from './file_runtime'
 import { loadConfig, loadState } from './fs_state'
 import { normalizeComputerName } from './runtime'
 import { TerminalManager } from './terminal_runtime'
@@ -22,7 +23,7 @@ function jsonContent(value: unknown) {
 	}
 }
 
-function buildMcpServer(terminalManager: TerminalManager) {
+function buildMcpServer(terminalManager: TerminalManager, fileToolManager: FileToolManager) {
 	const config = loadConfig()
 	const computerSlug = normalizeComputerName(config?.computerName ?? 'computer')
 	const toolName = (suffix: string) => `${computerSlug}_${suffix}`
@@ -55,9 +56,112 @@ function buildMcpServer(terminalManager: TerminalManager) {
 				statusMessage: state.statusMessage,
 				tunnelUrl: state.tunnelUrl ?? null,
 				connectionId: state.connectionId ?? null,
-				terminal: terminalManager.summary()
+				terminal: terminalManager.summary(),
+				fileTools: fileToolManager.summary()
 			})
 		}
+	)
+
+	server.registerTool(
+		toolName('read'),
+		{
+			description: 'Read a text file with numbered lines and return a snapshot id for later edits.',
+			inputSchema: {
+				path: z.string(),
+				offset: z.number().int().positive().optional(),
+				limit: z.number().int().positive().optional()
+			}
+		},
+		async (input) => jsonContent(fileToolManager.read(input))
+	)
+
+	server.registerTool(
+		toolName('write'),
+		{
+			description: 'Create or replace a UTF-8 text file.',
+			inputSchema: {
+				path: z.string(),
+				content: z.string()
+			}
+		},
+		async (input) => jsonContent(fileToolManager.write(input))
+	)
+
+	server.registerTool(
+		toolName('edit'),
+		{
+			description: 'Apply one exact text replacement to a file using a prior snapshot id.',
+			inputSchema: {
+				path: z.string(),
+				snapshotId: z.string(),
+				oldString: z.string(),
+				newString: z.string(),
+				replaceAll: z.boolean().optional()
+			}
+		},
+		async (input) => jsonContent(fileToolManager.edit(input))
+	)
+
+	server.registerTool(
+		toolName('multiedit'),
+		{
+			description: 'Apply multiple exact text replacements atomically using a prior snapshot id.',
+			inputSchema: {
+				path: z.string(),
+				snapshotId: z.string(),
+				edits: z.array(
+					z.object({
+						oldString: z.string(),
+						newString: z.string(),
+						replaceAll: z.boolean().optional()
+					})
+				)
+			}
+		},
+		async (input) => jsonContent(fileToolManager.multiEdit(input))
+	)
+
+	server.registerTool(
+		toolName('ls'),
+		{
+			description: 'List a directory directly from the filesystem.',
+			inputSchema: {
+				path: z.string(),
+				recursive: z.boolean().optional(),
+				limit: z.number().int().positive().optional()
+			}
+		},
+		async (input) => jsonContent(fileToolManager.list(input))
+	)
+
+	server.registerTool(
+		toolName('glob'),
+		{
+			description: 'Find filesystem paths using a glob pattern.',
+			inputSchema: {
+				pattern: z.string(),
+				root: z.string().optional(),
+				limit: z.number().int().positive().optional()
+			}
+		},
+		async (input) => jsonContent(fileToolManager.glob(input))
+	)
+
+	server.registerTool(
+		toolName('grep'),
+		{
+			description: 'Search file contents recursively without using the terminal.',
+			inputSchema: {
+				pattern: z.string(),
+				root: z.string().optional(),
+				include: z.array(z.string()).optional(),
+				exclude: z.array(z.string()).optional(),
+				limit: z.number().int().positive().optional(),
+				regex: z.boolean().optional(),
+				caseSensitive: z.boolean().optional()
+			}
+		},
+		async (input) => jsonContent(fileToolManager.grep(input))
 	)
 
 	server.registerTool(
@@ -159,11 +263,11 @@ function buildMcpServer(terminalManager: TerminalManager) {
 	return server
 }
 
-async function startMcpServer(port: number, terminalManager: TerminalManager) {
+async function startMcpServer(port: number, terminalManager: TerminalManager, fileToolManager: FileToolManager) {
 	const app = createMcpExpressApp({ host: defaultMcpHost })
 
 	app.post(defaultMcpPath, async (req: Request, res: Response) => {
-		const server = buildMcpServer(terminalManager)
+		const server = buildMcpServer(terminalManager, fileToolManager)
 
 		try {
 			const transport = new StreamableHTTPServerTransport({
@@ -230,6 +334,7 @@ async function startMcpServer(port: number, terminalManager: TerminalManager) {
 	return {
 		port: actualPort,
 		close: async () => {
+			await fileToolManager.shutdown().catch(() => {})
 			await terminalManager.shutdown().catch(() => {})
 			return new Promise<void>((resolve, reject) => {
 				httpServer.close((error) => {
