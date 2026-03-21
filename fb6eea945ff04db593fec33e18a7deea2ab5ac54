@@ -1,0 +1,33 @@
+src/mcp_server.ts
+  56b33be1025d8583 3,11-22,24,35,42,48-55,60,62,64-67,70-84,86-152,158,162,228-230,239
+src/constants.ts
+  56b33be1025d8583 14-23,29-37,43-44
+src/fs_state.ts
+  56b33be1025d8583 13
+src/terminal_runtime.ts
+  56b33be1025d8583 1-755
+src/daemon.ts
+  56b33be1025d8583 28
+src/paths.ts
+  56b33be1025d8583 23,45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "fb6eea945ff04db593fec33e18a7deea2ab5ac54",
+  "prompts": {
+    "56b33be1025d8583": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d119d-5dac-7840-9531-f5772f70d448",
+        "model": "gpt-5.4"
+      },
+      "human_author": "ezShroom <68300730+ezShroom@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 901,
+      "total_deletions": 41,
+      "accepted_lines": 900,
+      "overriden_lines": 0
+    }
+  }
+}
