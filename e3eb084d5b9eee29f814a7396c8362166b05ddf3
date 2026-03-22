@@ -1,0 +1,23 @@
+src/vision_runtime.ts
+  f0f01794de8a79d5 6,17,50,62,293
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "e3eb084d5b9eee29f814a7396c8362166b05ddf3",
+  "prompts": {
+    "f0f01794de8a79d5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d151d-7c07-7731-8251-4241edfeb051",
+        "model": "gpt-5.4"
+      },
+      "human_author": "ezShroom <68300730+ezShroom@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 5,
+      "total_deletions": 17,
+      "accepted_lines": 5,
+      "overriden_lines": 0
+    }
+  }
+}
