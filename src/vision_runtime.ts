@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { randomUUID } from 'node:crypto'
+import type { CallToolResult, ImageContent, TextContent } from '@modelcontextprotocol/sdk/types.js'
 import { maxScreenshotDisplays, maxVisionImageBytes, serviceSlug } from './constants'
 
 interface ReadImageInput {
@@ -13,20 +14,7 @@ interface ScreenshotInput {
 	display?: number
 }
 
-type ImageContentBlock = {
-	type: 'image'
-	data: string
-	mimeType: string
-}
-
-type TextContentBlock = {
-	type: 'text'
-	text: string
-}
-
-type VisionToolResult = {
-	content: Array<ImageContentBlock | TextContentBlock>
-}
+type VisionToolResult = CallToolResult
 
 function resolveFilePath(targetPath: string) {
 	return path.resolve(targetPath)
@@ -59,7 +47,7 @@ function mimeTypeForFile(filePath: string) {
 	}
 }
 
-function imageBlockFromFile(filePath: string, mimeType: string): ImageContentBlock {
+function imageBlockFromFile(filePath: string, mimeType: string): ImageContent {
 	const buffer = fs.readFileSync(filePath)
 	if (buffer.length > maxVisionImageBytes) {
 		throw new Error(`Image exceeds ${String(maxVisionImageBytes)} bytes: ${filePath}`)
@@ -71,7 +59,7 @@ function imageBlockFromFile(filePath: string, mimeType: string): ImageContentBlo
 	}
 }
 
-function textBlock(text: string): TextContentBlock {
+function textBlock(text: string): TextContent {
 	return {
 		type: 'text',
 		text
@@ -302,7 +290,7 @@ class VisionManager {
 		cleanupDir?: string
 	): VisionToolResult {
 		try {
-			const content: Array<ImageContentBlock | TextContentBlock> = [
+			const content: VisionToolResult['content'] = [
 				textBlock(
 					JSON.stringify(
 						{
