@@ -1,0 +1,91 @@
+src/daemon.ts
+  44186b5c51dcb82d 3,32,35-41
+src/mcp_server.ts
+  9a879aeb0fcc2f36 79-80,89,112,153-171,175-177,179-186
+  e46249771bea8e19 140-141,172-174,178
+  44186b5c51dcb82d 9,28-32,67,76-78,81-88,90-111,113-139,142-152,415,422
+src/fs_state.ts
+  44186b5c51dcb82d 2,15
+src/agent_cli_runtime.ts
+  9a879aeb0fcc2f36 5,9,11,14-17,41-42,63,93-101,103-109,117-124,182-198,200-201,207,209-218,225-242,245,249-251,254-257,261-262,306,312,321-322,326,344,355,358-371,373-377,379-382,387,389-393,397,400,406,409-414,419-426,446-448,533,554,557,610,613-621,623-630,632-641,646-658,677-678
+  e46249771bea8e19 12-13,18-20,81-82,102,199,202-206,208,219-224,243-244,246-248,252,258-260,335,345,372
+  7d33cffc89a9eb8a 336,348
+  44186b5c51dcb82d 1-4,6-8,10,21-40,43-62,64-80,83-92,110-116,125-181,263-305,307-311,313-320,323-325,327-334,337-343,346-347,349-354,356-357,378,383-386,388,394-396,398-399,401-405,407-408,415-418,427-445,449-532,534-553,555-556,558-565,567-576,583-597,599-609,611-612,659-676,679-739
+  34fd05579c3131c9 253,566,577-582,598,622,631,642-645
+src/constants.ts
+  44186b5c51dcb82d 24-26,48,52-53
+src/paths.ts
+  44186b5c51dcb82d 24,41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "b8fa8bc5a3c296498e29afeb1215a4895bda78db",
+  "prompts": {
+    "34fd05579c3131c9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d1f8c-1d5a-7e00-9a3f-1507adae47dc",
+        "model": "gpt-5.1"
+      },
+      "human_author": "ezShroom <68300730+ezShroom@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 16,
+      "total_deletions": 5,
+      "accepted_lines": 15,
+      "overriden_lines": 0
+    },
+    "44186b5c51dcb82d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d1bb2-bf60-78f3-9acb-fc756a2244e6",
+        "model": "gpt-5.4"
+      },
+      "human_author": "ezShroom <68300730+ezShroom@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 628,
+      "total_deletions": 4,
+      "accepted_lines": 596,
+      "overriden_lines": 0
+    },
+    "7d33cffc89a9eb8a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d1f96-0589-7123-b98b-cd36de63ebf6",
+        "model": "gpt-5.4"
+      },
+      "human_author": "ezShroom <68300730+ezShroom@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 2,
+      "total_deletions": 1,
+      "accepted_lines": 2,
+      "overriden_lines": 0
+    },
+    "9a879aeb0fcc2f36": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d1f8b-193f-77e1-99e1-0ce2d765f9c3",
+        "model": "gpt-5.1"
+      },
+      "human_author": "ezShroom <68300730+ezShroom@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 271,
+      "total_deletions": 29,
+      "accepted_lines": 228,
+      "overriden_lines": 0
+    },
+    "e46249771bea8e19": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d1ba7-57b8-7ed0-bb89-45c8bcdc0b7e",
+        "model": "gpt-5.4"
+      },
+      "human_author": "ezShroom <68300730+ezShroom@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 39,
+      "total_deletions": 40,
+      "accepted_lines": 39,
+      "overriden_lines": 0
+    }
+  }
+}
