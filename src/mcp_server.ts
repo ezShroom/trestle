@@ -6,6 +6,7 @@ import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { z } from 'zod'
+import { AgentCliManager } from './agent_cli_runtime'
 import { defaultMcpHost, defaultMcpPath, packageCommand, packageVersion } from './constants'
 import { FileToolManager } from './file_runtime'
 import { loadConfig, loadState } from './fs_state'
@@ -24,7 +25,12 @@ function jsonContent(value: unknown) {
 	}
 }
 
-function buildMcpServer(terminalManager: TerminalManager, fileToolManager: FileToolManager, visionManager: VisionManager) {
+function buildMcpServer(
+	terminalManager: TerminalManager,
+	agentCliManager: AgentCliManager,
+	fileToolManager: FileToolManager,
+	visionManager: VisionManager
+) {
 	const config = loadConfig()
 	const computerSlug = normalizeComputerName(config?.computerName ?? 'computer')
 	const toolName = (suffix: string) => `${computerSlug}_${suffix}`
@@ -58,12 +64,126 @@ function buildMcpServer(terminalManager: TerminalManager, fileToolManager: FileT
 				tunnelUrl: state.tunnelUrl ?? null,
 				connectionId: state.connectionId ?? null,
 				terminal: terminalManager.summary(),
+				agentCli: agentCliManager.summary(),
 				fileTools: fileToolManager.summary(),
 				vision: {
 					enabled: true
 				}
 			})
 		}
+	)
+
+	server.registerTool(
+		toolName('agent_cli_status'),
+		{
+			description:
+				'Check whether Claude Code, Codex, and OpenCode CLIs are installed and authenticated, plus recommended model-category mappings.',
+			inputSchema: {}
+		},
+		async () => jsonContent(await agentCliManager.getStatus())
+	)
+
+	server.registerTool(
+		toolName('agent_cli_read_run'),
+		{
+			description: 'Read stdout or stderr from a prior Claude Code, Codex, or OpenCode run by byte cursor.',
+			inputSchema: {
+				runId: z.string(),
+				stream: z.enum(['stdout', 'stderr']).optional(),
+				cursor: z.number().int().nonnegative().optional(),
+				limitBytes: z.number().int().positive().optional()
+			}
+		},
+		async (input) => jsonContent(agentCliManager.readRun(input))
+	)
+
+	server.registerTool(
+		toolName('claude_code'),
+		{
+			description:
+				'Run Claude Code in blocking print mode with structured JSON output. Returns a resumable session id, summary, logs, and parsed result.',
+			inputSchema: {
+				prompt: z.string(),
+				cwd: z.string().optional(),
+				sessionId: z.string().optional(),
+				continueMostRecent: z.boolean().optional(),
+				forkSession: z.boolean().optional(),
+				model: z.string().optional(),
+				modelCategory: z.enum(['opus', 'sonnet', 'haiku']).optional(),
+				permissionMode: z
+					.enum(['default', 'acceptEdits', 'plan', 'dontAsk', 'bypassPermissions', 'auto'])
+					.optional(),
+				addDirs: z.array(z.string()).optional(),
+				appendSystemPrompt: z.string().optional(),
+				systemPrompt: z.string().optional(),
+				mcpConfig: z.array(z.string()).optional(),
+				allowedTools: z.array(z.string()).optional(),
+				disallowedTools: z.array(z.string()).optional(),
+				maxBudgetUsd: z.number().positive().optional(),
+				timeoutMs: z.number().int().positive().optional()
+			}
+		},
+		async (input) => jsonContent(await agentCliManager.runClaudeCode(input))
+	)
+
+	server.registerTool(
+		toolName('codex'),
+		{
+			description:
+				'Run Codex CLI in blocking exec mode with JSONL output. Returns a resumable thread id, summary, logs, and parsed events.',
+			inputSchema: {
+				prompt: z.string(),
+				cwd: z.string().optional(),
+				sessionId: z.string().optional(),
+				resumeMostRecent: z.boolean().optional(),
+				model: z.string().optional(),
+				modelCategory: z.enum(['gpt-5.4', 'gpt-5.4-mini', 'gpt-5.3-codex']).optional(),
+				reasoningEffort: z.enum(['minimal', 'low', 'medium', 'high', 'xhigh']).optional(),
+				sandbox: z.enum(['read-only', 'workspace-write', 'danger-full-access']).optional(),
+				fullAuto: z.boolean().optional(),
+				dangerouslyBypassApprovalsAndSandbox: z.boolean().optional(),
+				skipGitRepoCheck: z.boolean().optional(),
+				addDirs: z.array(z.string()).optional(),
+				outputSchema: z.string().optional(),
+				configOverrides: z.array(z.string()).optional(),
+				timeoutMs: z.number().int().positive().optional()
+			}
+		},
+		async (input) => jsonContent(await agentCliManager.runCodex(input))
+	)
+
+	server.registerTool(
+		toolName('opencode'),
+		{
+			description:
+				'Run OpenCode in blocking JSON event mode. Returns a resumable session id when available, summary, logs, and parsed events.',
+			inputSchema: {
+				prompt: z.string(),
+				cwd: z.string().optional(),
+				sessionId: z.string().optional(),
+				continueMostRecent: z.boolean().optional(),
+				forkSession: z.boolean().optional(),
+				model: z.string().optional(),
+				modelCategory: z
+					.enum([
+						'anthropic_opus',
+						'anthropic_sonnet',
+						'anthropic_haiku',
+						'openai_gpt_5_4',
+						'openai_gpt_5_4_mini',
+						'openai_gpt_5_3_codex'
+					])
+					.optional(),
+				agent: z.string().optional(),
+				reasoningEffort: z.enum(['minimal', 'low', 'medium', 'high', 'xhigh']).optional(),
+				variant: z.string().optional(),
+				files: z.array(z.string()).optional(),
+				share: z.boolean().optional(),
+				title: z.string().optional(),
+				timeoutMs: z.number().int().positive().optional()
+			}
+		},
+		async (input) => jsonContent(await agentCliManager.runOpenCode(input))
 	)
 
 	server.registerTool(
@@ -292,13 +412,14 @@ function buildMcpServer(terminalManager: TerminalManager, fileToolManager: FileT
 async function startMcpServer(
 	port: number,
 	terminalManager: TerminalManager,
+	agentCliManager: AgentCliManager,
 	fileToolManager: FileToolManager,
 	visionManager: VisionManager
 ) {
 	const app = createMcpExpressApp({ host: defaultMcpHost })
 
 	app.post(defaultMcpPath, async (req: Request, res: Response) => {
-		const server = buildMcpServer(terminalManager, fileToolManager, visionManager)
+		const server = buildMcpServer(terminalManager, agentCliManager, fileToolManager, visionManager)
 
 		try {
 			const transport = new StreamableHTTPServerTransport({

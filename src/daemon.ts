@@ -1,5 +1,6 @@
 import 'colors'
 import { PokeTunnel } from 'poke'
+import { AgentCliManager } from './agent_cli_runtime'
 import { checkPokeAuth } from './auth'
 import { defaultMcpPort, packageCommand } from './constants'
 import { FileToolManager } from './file_runtime'
@@ -28,9 +29,16 @@ export async function runDaemon() {
 	}))
 
 	const terminalManager = new TerminalManager()
+	const agentCliManager = new AgentCliManager()
 	const fileToolManager = new FileToolManager()
 	const visionManager = new VisionManager()
-	const mcpServer = await startMcpServer(config.port || defaultMcpPort, terminalManager, fileToolManager, visionManager)
+	const mcpServer = await startMcpServer(
+		config.port || defaultMcpPort,
+		terminalManager,
+		agentCliManager,
+		fileToolManager,
+		visionManager
+	)
 	void maybeNotifyAboutUpdate()
 
 	let stopRequested = false

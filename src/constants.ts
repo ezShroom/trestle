@@ -21,6 +21,9 @@ const maxTerminalEnvironmentBytes = 16 * 1024
 const maxTerminalRetentionBytes = 512 * 1024
 const maxTerminalSessionIdleMs = 30 * 60_000
 const terminalKillGraceMs = 2_000
+const defaultAgentCliReadBytes = 16 * 1024
+const maxAgentCliReadBytes = 128 * 1024
+const maxAgentCliRetentionBytes = 512 * 1024
 const defaultFileReadOffset = 1
 const defaultFileReadLimit = 200
 const maxFileReadLimit = 1_000
@@ -42,9 +45,12 @@ export {
 	defaultFileReadLimit,
 	defaultFileReadOffset,
 	defaultFileSnapshotTtlMs,
+	defaultAgentCliReadBytes,
 	defaultTerminalCommandTimeoutMs,
 	defaultTerminalResponseBytes,
 	maxScreenshotDisplays,
+	maxAgentCliReadBytes,
+	maxAgentCliRetentionBytes,
 	maxFileGrepLimit,
 	maxFileListLimit,
 	maxFileReadLimit,

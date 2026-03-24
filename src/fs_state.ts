@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { configDir, configFile, logDir, stateFile, terminalHomeDir, terminalLogDir } from './paths'
+import { agentCliLogDir, configDir, configFile, logDir, stateFile, terminalHomeDir, terminalLogDir } from './paths'
 import type { AppConfig, AppState } from './types'
 
 const defaultState: AppState = {
@@ -12,6 +12,7 @@ function ensureAppDirs() {
 	fs.mkdirSync(logDir, { recursive: true })
 	fs.mkdirSync(terminalHomeDir, { recursive: true })
 	fs.mkdirSync(terminalLogDir, { recursive: true })
+	fs.mkdirSync(agentCliLogDir, { recursive: true })
 }
 
 function loadConfig() {

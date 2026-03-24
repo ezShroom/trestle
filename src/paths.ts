@@ -21,6 +21,7 @@ const configFile = path.join(configDir, 'config.json')
 const stateFile = path.join(configDir, 'state.json')
 const logDir = path.join(configDir, 'logs')
 const terminalLogDir = path.join(logDir, 'terminal')
+const agentCliLogDir = path.join(logDir, 'agent-cli')
 const terminalHomeDir = path.join(os.homedir(), '.queen-poke')
 const stdoutLogFile = path.join(logDir, 'daemon.stdout.log')
 const stderrLogFile = path.join(logDir, 'daemon.stderr.log')
@@ -37,6 +38,7 @@ export {
 	configDir,
 	configFile,
 	entryScript,
+	agentCliLogDir,
 	launchAgentFile,
 	localMcpUrl,
 	logDir,
